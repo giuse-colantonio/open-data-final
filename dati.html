@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizzatore Dati Fragilità Comunale</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .navbar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .nav-link {
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            color: #3498db;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background-color: #e1f0fa;
+        }
+        
+        .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        
+        .chart-container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        
+        .chart-wrapper {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        
+        .chart-wrapper:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #3498db;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .city-selector {
+            text-align: center;
+            margin: 30px auto;
+            padding: 15px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+        }
+        
+        /* Stili migliorati per il selettore con ricerca */
+        .searchable-select-container {
+            position: relative;
+            width: 300px;
+            margin: 0 auto;
+        }
+        
+        .searchable-select-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            outline: none;
+            background-color: #f8f9fa;
+        }
+        
+        .searchable-select-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 1px 8px rgba(52, 152, 219, 0.3);
+            background-color: white;
+        }
+        
+        .searchable-select-input::placeholder {
+            color: #95a5a6;
+        }
+        
+        .searchable-select-dropdown {
+            position: absolute;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 0 0 8px 8px;
+            background-color: white;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            scrollbar-width: thin;
+            scrollbar-color: #bdc3c7 #f1f1f1;
+        }
+        
+        .searchable-select-dropdown::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .searchable-select-dropdown::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .searchable-select-dropdown::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 10px;
+        }
+        
+        .searchable-select-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .searchable-select-option:last-child {
+            border-bottom: none;
+        }
+        
+        .searchable-select-option:hover {
+            background-color: #ecf0f1;
+        }
+        
+        .searchable-select-option.selected {
+            background-color: #e1f0fa;
+            color: #2980b9;
+            font-weight: 500;
+        }
+        
+        .searchable-select-option.hidden {
+            display: none;
+        }
+        
+        /* Stile per il numero di risultati trovati */
+        .search-results-count {
+            font-size: 12px;
+            color: #7f8c8d;
+            padding: 5px 16px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        /* Animazioni */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .searchable-select-dropdown.visible {
+            display: block;
+            animation: fadeIn 0.2s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="nav-link">Home Page</a>
+        <a href="dati.html" class="nav-link active">Dati per Singolo Comune</a>
+        <a href="confronto.html" class="nav-link">Confronto Città</a>
+    </nav>
+    <h1>Analisi Dati Comuni</h1>
+    
+    <div class="city-selector">
+        <div class="searchable-select-container">
+            <input type="text" id="citySearch" class="searchable-select-input" placeholder="Cerca o seleziona una città..." autocomplete="off">
+            <div id="cityDropdown" class="searchable-select-dropdown">
+                <div class="search-results-count" id="resultsCount"></div>
+                <!-- Le opzioni saranno generate dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <div class="chart-wrapper">
+            <h2>Indice di Fragilità Comunale</h2>
+            <canvas id="fragilityChart"></canvas>
+        </div>
+        
+        <div class="chart-wrapper">
+            <h2>Tasso di Motorizzazione ad Alta Emissione</h2>
+            <canvas id="emissionChart"></canvas>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Raccolta Indifferenziata dei Rifiuti Urbani</h2>
+            <canvas id="wasteChart"></canvas>
+        </div>
+
+        <div class="chart-wrapper">
+            <h2>Tasso di Occupazione</h2>
+            <canvas id="employmentChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let globalData = [];
+        let cities = [];
+        let selectedCity = '';
+        
+        // Funzioni per il selettore con ricerca
+        function initSearchableSelect() {
+            const searchInput = document.getElementById('citySearch');
+            const dropdown = document.getElementById('cityDropdown');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            // Popolamento iniziale del dropdown
+            cities.forEach(city => {
+                const option = document.createElement('div');
+                option.className = 'searchable-select-option';
+                option.textContent = city;
+                option.addEventListener('click', function() {
+                    selectCity(city);
+                });
+                dropdown.appendChild(option);
+            });
+            
+            // Aggiorna il conteggio dei risultati
+            updateResultsCount();
+            
+            // Mostra dropdown quando si clicca sull'input
+            searchInput.addEventListener('click', function() {
+                showDropdown();
+            });
+            
+            // Filtra le opzioni durante la digitazione
+            searchInput.addEventListener('input', function() {
+                filterOptions(this.value);
+            });
+            
+            // Nascondi dropdown quando si clicca fuori
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    hideDropdown();
+                }
+            });
+            
+            // Gestione tasti freccia e invio
+            searchInput.addEventListener('keydown', function(e) {
+                const options = Array.from(dropdown.querySelectorAll('.searchable-select-option:not(.hidden)'));
+                const selectedIndex = options.findIndex(opt => opt.classList.contains('selected'));
+                
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    showDropdown();
+                    if (selectedIndex < 0 && options.length > 0) {
+                        options[0].classList.add('selected');
+                        ensureVisible(options[0], dropdown);
+                    } else if (selectedIndex < options.length - 1) {
+                        options[selectedIndex].classList.remove('selected');
+                        options[selectedIndex + 1].classList.add('selected');
+                        ensureVisible(options[selectedIndex + 1], dropdown);
+                    }
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (selectedIndex > 0) {
+                        options[selectedIndex].classList.remove('selected');
+                        options[selectedIndex - 1].classList.add('selected');
+                        ensureVisible(options[selectedIndex - 1], dropdown);
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const selectedOption = dropdown.querySelector('.searchable-select-option.selected');
+                    if (selectedOption) {
+                        selectCity(selectedOption.textContent);
+                    } else if (options.length === 1) {
+                        selectCity(options[0].textContent);
+                    }
+                    hideDropdown();
+                } else if (e.key === 'Escape') {
+                    hideDropdown();
+                }
+            });
+            
+            // Funzione per aggiornare il conteggio dei risultati
+            function updateResultsCount() {
+                const visibleOptions = dropdown.querySelectorAll('.searchable-select-option:not(.hidden)').length;
+                resultsCount.textContent = `${visibleOptions} comuni trovati`;
+            }
+            
+            // Funzioni per mostrare/nascondere dropdown con animazione
+            function showDropdown() {
+                dropdown.classList.add('visible');
+                dropdown.style.display = 'block';
+            }
+            
+            function hideDropdown() {
+                dropdown.classList.remove('visible');
+                dropdown.style.display = 'none';
+            }
+        }
+        
+        function ensureVisible(element, container) {
+            // Ignora l'elemento resultsCount nel calcolo
+            const resultsCountHeight = document.getElementById('resultsCount').offsetHeight;
+            const containerTop = container.scrollTop + resultsCountHeight;
+            const containerBottom = containerTop + container.clientHeight - resultsCountHeight;
+            const elementTop = element.offsetTop;
+            const elementBottom = elementTop + element.clientHeight;
+            
+            if (elementTop < containerTop) {
+                container.scrollTop = elementTop - resultsCountHeight;
+            } else if (elementBottom > containerBottom) {
+                container.scrollTop = elementBottom - container.clientHeight + resultsCountHeight;
+            }
+        }
+        
+        function filterOptions(searchText) {
+            const dropdown = document.getElementById('cityDropdown');
+            const options = dropdown.querySelectorAll('.searchable-select-option');
+            const resultsCount = document.getElementById('resultsCount');
+            const searchLower = searchText.toLowerCase().trim();
+            
+            let visibleCount = 0;
+            
+            options.forEach(option => {
+                const cityName = option.textContent.toLowerCase();
+                const words = searchLower.split(/\s+/).filter(word => word.length > 0);
+                
+                if (words.length === 0 || words.every(word => cityName.includes(word))) {
+                    option.classList.remove('hidden');
+                    option.classList.remove('selected');
+                    visibleCount++;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+            
+            // Aggiorna il conteggio dei risultati
+            resultsCount.textContent = `${visibleCount} comuni trovati`;
+            
+            if (visibleCount > 0) {
+                dropdown.classList.add('visible');
+                dropdown.style.display = 'block';
+            } else {
+                dropdown.classList.remove('visible');
+                dropdown.style.display = 'none';
+            }
+        }
+        
+        function selectCity(city) {
+            selectedCity = city;
+            document.getElementById('citySearch').value = city;
+            document.getElementById('cityDropdown').classList.remove('visible');
+            document.getElementById('cityDropdown').style.display = 'none';
+            updateCharts();
+        }
+        
+        Papa.parse('dati.csv', {
+            download: true,
+            header: true,
+            complete: function(results) {
+                globalData = results.data;
+                console.log("Dati caricati:", globalData);
+                
+                // Verifica che Territorio esista nei dati
+                if (globalData.length > 0) {
+                    console.log("Campi disponibili:", Object.keys(globalData[0]));
+                }
+                
+                // Estrai l'elenco dei territori unici
+                cities = [...new Set(globalData.map(row => row.Territorio))].filter(Boolean);
+                cities.sort(); // Ordina alfabeticamente per facilitare la ricerca
+                console.log("Città trovate:", cities);
+                
+                // Inizializza il selettore con ricerca
+                initSearchableSelect();
+                
+                // Se ci sono città, mostra i dati della prima
+                if (cities.length > 0) {
+                    selectedCity = cities[0];
+                    document.getElementById('citySearch').value = selectedCity;
+                    updateCharts();
+                } else {
+                    console.error("Nessuna città trovata nei dati");
+                }
+            },
+            error: function(error) {
+                console.error("Errore nel caricamento del CSV:", error);
+            }
+        });
+
+        function updateCharts() {
+            const cityData = globalData.filter(row => row.Territorio === selectedCity);
+            
+            // Filtra i dati per indicatore
+            const fragilityData = cityData.filter(row => row.DATA_TYPE === 'COMP_FRAG_INDEX_DECILE');
+            const emissionData = cityData.filter(row => row.DATA_TYPE === 'HIGH_EMISS_MOTOR_RATE');
+            const wasteData = cityData.filter(row => row.DATA_TYPE === 'UNDIF_COLL_URBAN_WASTE');
+            const employmentData = cityData.filter(row => row.DATA_TYPE === 'EMPL_RATE_20_64');
+
+            // Rimuovi i grafici esistenti
+            document.getElementById('fragilityChart').remove();
+            document.getElementById('emissionChart').remove();
+            document.getElementById('wasteChart').remove();
+            document.getElementById('employmentChart').remove();
+
+            // Ricrea i canvas
+            document.querySelector('.chart-wrapper:nth-child(1)').innerHTML += '<canvas id="fragilityChart"></canvas>';
+            document.querySelector('.chart-wrapper:nth-child(2)').innerHTML += '<canvas id="emissionChart"></canvas>';
+            document.querySelector('.chart-wrapper:nth-child(3)').innerHTML += '<canvas id="wasteChart"></canvas>';
+            document.querySelector('.chart-wrapper:nth-child(4)').innerHTML += '<canvas id="employmentChart"></canvas>';
+
+            // Ricrea i grafici con colori personalizzati
+            createLineChart('fragilityChart', fragilityData, 'Indice di Fragilità', 'rgb(52, 152, 219)');
+            createLineChart('emissionChart', emissionData, 'Tasso di Motorizzazione', 'rgb(231, 76, 60)');
+            createLineChart('wasteChart', wasteData, 'Raccolta Indifferenziata', 'rgb(46, 204, 113)');
+            createLineChart('employmentChart', employmentData, 'Tasso di Occupazione', 'rgb(155, 89, 182)');
+        }
+
+        function createLineChart(canvasId, data, label, borderColor) {
+            const ctx = document.getElementById(canvasId);
+            const years = data.map(row => row.TIME_PERIOD);
+            const values = data.map(row => parseFloat(row.Osservazione));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: label,
+                        data: values,
+                        borderColor: borderColor || 'rgb(75, 192, 192)',
+                        backgroundColor: borderColor ? borderColor.replace('rgb', 'rgba').replace(')', ', 0.1)') : 'rgba(75, 192, 192, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: borderColor || 'rgb(75, 192, 192)',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                                    size: 14
+                                },
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Andamento ${label} (2018-2021)`,
+                            font: {
+                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                                size: 16,
+                                weight: '500'
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: {
+                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                                size: 14
+                            },
+                            bodyFont: {
+                                family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 6
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

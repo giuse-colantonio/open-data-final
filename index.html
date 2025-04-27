@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Data Comuni Italiani</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 90%;
+            margin: 20px auto;
+        }
+        
+        .nav-link {
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            color: #3498db;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background-color: #e1f0fa;
+        }
+        
+        .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #3498db;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
+        }
+        
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .data-card {
+            flex: 1;
+            min-width: 250px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .data-card p {
+            margin-bottom: 0;
+            color: #555;
+        }
+        
+        .data-card.fragility {
+            border-left-color: #3498db;
+        }
+        
+        .data-card.emission {
+            border-left-color: #e74c3c;
+        }
+        
+        .data-card.waste {
+            border-left-color: #2ecc71;
+        }
+        
+        .data-card.employment {
+            border-left-color: #9b59b6;
+        }
+        
+        .feature-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .feature {
+            flex: 1;
+            min-width: 260px;
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .feature:hover {
+            background-color: #e1f0fa;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            color: #3498db;
+        }
+        
+        .feature h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 40px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .cta-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Media queries */
+        @media (max-width: 768px) {
+            .feature-container, .card-container {
+                flex-direction: column;
+            }
+            
+            .feature, .data-card {
+                min-width: 100%;
+            }
+            
+            .header {
+                padding: 30px 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .navbar {
+                flex-wrap: wrap;
+            }
+            
+            .nav-link {
+                margin: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="nav-link active">Home Page</a>
+        <a href="dati.html" class="nav-link">Dati per Singolo Comune</a>
+        <a href="confronto.html" class="nav-link">Confronto Città</a>
+    </nav>
+    
+    <div class="header">
+        <h1>Open Data dei Comuni Italiani</h1>
+        <p>Esplora i dati pubblici dei comuni italiani relativi a fragilità sociale, impatto ambientale e sviluppo economico</p>
+    </div>
+    
+    <div class="container">
+        <div class="section">
+            <h2>Cosa sono gli Open Data</h2>
+            <p>Gli <strong>Open Data</strong> (dati aperti) sono dati liberamente accessibili a tutti, privi di restrizioni di copyright, brevetti o altri meccanismi di controllo. Questi dati sono rilasciati in formati standard, machine-readable, e possono essere liberamente utilizzati, riutilizzati e ridistribuiti da chiunque.</p>
+            
+            <div class="feature-container">
+                <div class="feature">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Trasparenza</h3>
+                    <p>Gli Open Data favoriscono la trasparenza delle amministrazioni pubbliche, rendendo accessibili informazioni su come vengono gestite le risorse e prese le decisioni.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">💡</div>
+                    <h3>Innovazione</h3>
+                    <p>L'accesso libero ai dati stimola l'innovazione, permettendo a sviluppatori, ricercatori e imprese di creare nuovi servizi, applicazioni e analisi.</p>
+                </div>
+                
+                <div class="feature">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Partecipazione</h3>
+                    <p>Gli Open Data promuovono la partecipazione civica, consentendo ai cittadini di essere meglio informati sulle questioni pubbliche e di contribuire attivamente al processo decisionale.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>A cosa servono gli Open Data</h2>
+            <p>Gli Open Data rappresentano una risorsa fondamentale per la società moderna, con numerosi benefici:</p>
+            
+            <ul>
+                <li><strong>Promozione della democrazia e trasparenza</strong> - Permettono ai cittadini di monitorare l'operato delle istituzioni</li>
+                <li><strong>Crescita economica</strong> - Stimolano la creazione di nuovi prodotti e servizi basati sui dati</li>
+                <li><strong>Miglioramento dei servizi pubblici</strong> - Consentono di identificare inefficienze e proporre soluzioni innovative</li>
+                <li><strong>Ricerca e analisi</strong> - Forniscono una base solida per studi scientifici e analisi socio-economiche</li>
+                <li><strong>Collaborazione intersettoriale</strong> - Favoriscono la cooperazione tra settore pubblico, privato e accademico</li>
+                <li><strong>Sviluppo di politiche pubbliche più efficaci</strong> - Supportano decisioni basate su evidenze empiriche</li>
+            </ul>
+            
+            <p>In un mondo sempre più guidato dai dati, gli Open Data giocano un ruolo cruciale nel promuovere società più eque, efficienti e innovative.</p>
+        </div>
+        
+        <div class="section">
+            <h2>I Dati del nostro Portale</h2>
+            <p>Il nostro portale utilizza dati forniti dall'<strong>ISTAT</strong> (Istituto Nazionale di Statistica), l'ente pubblico di ricerca italiano che produce e diffonde informazioni statistiche ufficiali. Questi dati sono raccolti attraverso censimenti, indagini e rilevazioni, e rappresentano una fonte autorevole per comprendere le dinamiche socio-economiche e ambientali del nostro paese.</p>
+            
+            <p>Abbiamo selezionato quattro indicatori chiave che offrono una panoramica significativa delle condizioni dei comuni italiani:</p>
+            
+            <div class="card-container">
+                <div class="data-card fragility">
+                    <h4>Indice di Fragilità Comunale</h4>
+                    <p>Misura la vulnerabilità socio-economica dei comuni, considerando fattori come invecchiamento della popolazione, disoccupazione, livello di istruzione e reddito. Un valore più alto indica una maggiore fragilità sociale.</p>
+                </div>
+                
+                <div class="data-card emission">
+                    <h4>Tasso di Motorizzazione ad Alta Emissione</h4>
+                    <p>Rappresenta la percentuale di veicoli circolanti con elevati livelli di emissioni inquinanti. Questo indicatore è importante per valutare l'impatto ambientale della mobilità nelle diverse aree urbane.</p>
+                </div>
+                
+                <div class="data-card waste">
+                    <h4>Raccolta Indifferenziata dei Rifiuti Urbani</h4>
+                    <p>Misura la quantità di rifiuti urbani smaltiti senza separazione per il riciclo. Un valore più basso indica una migliore gestione dei rifiuti e un minor impatto ambientale.</p>
+                </div>
+                
+                <div class="data-card employment">
+                    <h4>Tasso di Occupazione</h4>
+                    <p>Indica la percentuale di persone occupate nella fascia d'età 20-64 anni. Questo dato è fondamentale per valutare la salute economica di un territorio e il benessere della sua popolazione.</p>
+                </div>
+            </div>
+            
+            <p>Questi indicatori coprono il periodo 2018-2021 e consentono di analizzare le tendenze nel tempo e confrontare diverse realtà territoriali.</p>
+        </div>
+        
+        <div class="section">
+            <h2>Come usare questo Portale</h2>
+            <p>Il nostro portale offre strumenti intuitivi per esplorare e analizzare i dati ISTAT sui comuni italiani:</p>
+            
+            <h3>Visualizzazione per Singolo Comune</h3>
+            <p>Nella sezione <a href="dati.html">Dati per Singolo Comune</a>, puoi selezionare un comune specifico e visualizzare grafici dettagliati sull'andamento dei quattro indicatori nel periodo 2018-2021. Questa funzionalità è utile per comprendere l'evoluzione delle condizioni socio-economiche e ambientali di un territorio specifico.</p>
+            
+            <h3>Confronto tra Comuni</h3>
+            <p>La sezione <a href="confronto.html">Confronto Città</a> ti permette di mettere a confronto due comuni diversi, analizzando le similitudini e le differenze nei loro indicatori. Questo strumento è particolarmente utile per studi comparativi e per identificare best practices territoriali.</p>
+            
+            <p>Tutti i grafici sono interattivi e offrono una visualizzazione chiara delle tendenze temporali, facilitando l'interpretazione dei dati anche per utenti non esperti.</p>
+            
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 - Daniele Agrillo, Giuseppe Colantonio</p>
+        <p>Fonte dei dati: <a href="https://esploradati.istat.it/databrowser/#/it/dw/categories/IT1,Z0930TER,1.0/CFI_MUN/IT1,DF_COMP_FRA_IND_MUNICIPAL_02,1.0" target="_blank">ISTAT</a> e sono disponibili come Open Data secondo la <a href="https://www.istat.it/it/note-legali" target="_blank">licenza CC-BY 4.0</a></p>
+    </div>
+</body>
+</html>
